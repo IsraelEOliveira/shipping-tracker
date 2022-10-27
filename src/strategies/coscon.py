@@ -9,18 +9,22 @@ from .tracker import TrackerStrategy
 
 
 TOKEN = {
-  'uri'              : 'https://elines.coscoshipping.com/ebusiness/cargoTracking',
-  'trackType'        : (By.CSS_SELECTOR, '.cargoTrackType'),
-  'billOpt'          : (By.XPATH, '//ul[@class="ivu-select-dropdown-list"]/div/li[1]'),
-  'unitInput'        : (By.CSS_SELECTOR, '#wrap > input'),
-  'billTab'          : (By.XPATH, '//div[@class="ivu-tabs-nav-wrap"]//div[contains(text(), "Bill of Lading Information")]'),
-  'detailPart'       : (By.CLASS_NAME, 'ivu-c-detailPart'),
-  'detailRows'       : (By.CSS_SELECTOR, '.ivu-c-detailLine p'),
-  'scriptLabel'      : 'return arguments[0].childNodes[0].textContent',
-  'containerTab'     : (By.XPATH, '//div[@class="ivu-tabs-nav-wrap"]//div[contains(text(), "Container Information")]'),
-  'container'        : (By.CSS_SELECTOR, '.cntrsList tbody > tr:first-child > td:first-child'),
-  'containerTrigger' : (By.CSS_SELECTOR, '.ivu-poptip-rel'),
-  'containerPopper'  : (By.CSS_SELECTOR, '.ivu-poptip-popper .ivu-table-body')
+  'uri'               : 'https://elines.coscoshipping.com/ebusiness/cargoTracking',
+  'trackType'         : (By.CSS_SELECTOR, '.cargoTrackType'),
+  'billOpt'           : (By.XPATH, '//ul[@class="ivu-select-dropdown-list"]/div/li[1]'),
+  'unitInput'         : (By.CSS_SELECTOR, '#wrap > input'),
+  'billTab'           : (By.XPATH, '//div[@class="ivu-tabs-nav-wrap"]//div[contains(text(), "Bill of Lading Information")]'),
+  'detailPart'        : (By.CLASS_NAME, 'ivu-c-detailPart'),
+  'detailRows'        : (By.CSS_SELECTOR, '.ivu-c-detailLine p'),
+  'scriptLabel'       : 'return arguments[0].childNodes[0].textContent',
+  'containerTab'      : (By.XPATH, '//div[@class="ivu-tabs-nav-wrap"]//div[contains(text(), "Container Information")]'),
+  'container'         : (By.CSS_SELECTOR, '.cntrsList tbody > tr:first-child > td:first-child'),
+  'containerNo'       : (By.CSS_SELECTOR, 'p:first-child'),
+  'containerTrigger'  : (By.CSS_SELECTOR, '.ivu-poptip-rel'),
+  'containerPopper'   : (By.CSS_SELECTOR, '.ivu-poptip-popper .ivu-table-body'),
+  'containerCycle'    : (By.CSS_SELECTOR, 'tr > td:not(:first-child)'),
+  'containerStatus'   : (By.CSS_SELECTOR, 'p > span:last-child'),
+  'containerLocation' : (By.CSS_SELECTOR, 'span')
 }
 
 class CosconTracker(TrackerStrategy):
@@ -92,7 +96,7 @@ class CosconTracker(TrackerStrategy):
 
     # Query first container cell
     dom_container = self.driver.find_element(*TOKEN['container'])
-    scraped_container = dom_container.find_element(By.CSS_SELECTOR, 'p:first-child').text
+    scraped_container = dom_container.find_element(*TOKEN['containerNo']).text
 
     # Trigger popper
     dom_container.find_element(*TOKEN['containerTrigger']).click()
@@ -100,7 +104,7 @@ class CosconTracker(TrackerStrategy):
         ec.visibility_of_element_located(TOKEN['containerPopper']))
 
     # Extract table skipping number column
-    dom_rows = dom_container_form.find_elements(By.CSS_SELECTOR, 'tr > td:not(:first-child)')
+    dom_rows = dom_container_form.find_elements(*TOKEN['containerCycle'])
 
     # Scrape both columns
     scraped_shipment = list(
@@ -110,9 +114,9 @@ class CosconTracker(TrackerStrategy):
               [
                 *list(map(lambda el:
                   el.text,
-                  pair[0].find_elements(By.CSS_SELECTOR, 'p > span:last-child')
+                  pair[0].find_elements(*TOKEN['containerStatus'])
                 )),
-                pair[1].find_element(By.CSS_SELECTOR, 'span').text
+                pair[1].find_element(*TOKEN['containerLocation']).text
               ]
             )),
             chunk(dom_rows, 2)
