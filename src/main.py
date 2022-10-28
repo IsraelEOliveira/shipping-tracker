@@ -6,7 +6,7 @@ from strategies.coscon import CosconTracker
 
 
 if __name__ == '__main__':
-  value = sys.argv[1] if len(sys.argv) > 0 else None
+  value = sys.argv[1] if len(sys.argv) > 1 else None
 
   if value is not None:
     cargo_pfx, cargo_number = match(r'([a-zA-Z]+)(\d+)', value).groups()
