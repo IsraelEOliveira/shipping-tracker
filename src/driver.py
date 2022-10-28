@@ -1,7 +1,9 @@
 from typing import List
 from selenium import webdriver
 from selenium.webdriver.remote.webdriver import WebDriver
-
+from selenium.webdriver.chrome.service import Service as ChromiumService
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.utils import ChromeType
 
 '''
   Not thread safe
@@ -9,7 +11,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 class DriverService:
   _instances: List[WebDriver] = []
 
-  factory = lambda **args: webdriver.Chrome(*args)
+  factory = lambda **args: webdriver.Chrome(*args, service=ChromiumService(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()))
   default_instance: WebDriver = None
 
   @classmethod
